@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class UserController {
 
     @GetMapping
     public Collection<User> findAll() {
-        return users.values();
+        return new ArrayList<>(users.values());
     }
 
     @PostMapping
@@ -36,6 +37,15 @@ public class UserController {
         users.put(user.getId(), user);
         log.info("Пользователь успешно сохранен");
         return user;
+    }
+
+    private long getNextId() {
+        long currentMaxId = users.keySet()
+                .stream()
+                .mapToLong(id -> id)
+                .max()
+                .orElse(0);
+        return ++currentMaxId;
     }
 
     @PutMapping
@@ -56,15 +66,6 @@ public class UserController {
             return oldUser;
         }
         throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
-    }
-
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
     }
 
     private void validateUser(User user) {

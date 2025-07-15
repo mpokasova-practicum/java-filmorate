@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> findAll() {
-        return films.values();
+        return new ArrayList<>(films.values());
     }
 
     @PostMapping
@@ -28,7 +29,6 @@ public class FilmController {
         log.info("Валидация входящего запроса");
         validateFilm(film);
         film.setId(getNextId());
-        log.info("Создан идентификатор фильма: {}", film.getId());
         films.put(film.getId(), film);
         log.info("Фильм добавлен в коллекцию");
         return film;
