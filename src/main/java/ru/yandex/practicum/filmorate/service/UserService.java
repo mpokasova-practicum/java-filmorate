@@ -64,9 +64,9 @@ public class UserService {
         if (friend == null) {
             throw new NotFoundException("Пользователь с id = " + friendId + " не найден");
         }
-        if (!user.getFriends().contains(friendId)) {
-            throw new ValidationException("Данные пользователя не являются друзьями");
-        }
+//        if (!user.getFriends().contains(friendId)) {
+//            throw new ValidationException("Данные пользователя не являются друзьями");
+//        }
 
         user.getFriends().remove(friendId);
         friend.getFriends().remove(userId);
