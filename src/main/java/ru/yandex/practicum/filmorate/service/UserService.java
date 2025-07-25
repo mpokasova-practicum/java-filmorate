@@ -44,12 +44,12 @@ public class UserService {
         if (friend == null) {
             throw new NotFoundException("Пользователь с id = " + friendId + " не найден");
         }
-        if (user.getFriends().contains(friendId)) {
+        if (user.getFriendIds().contains(friendId)) {
             throw new ValidationException("Данные пользователя уже являются друзьями");
         }
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+        user.getFriendIds().add(friendId);
+        friend.getFriendIds().add(userId);
 
         return List.of(user, friend);
     }
@@ -64,12 +64,9 @@ public class UserService {
         if (friend == null) {
             throw new NotFoundException("Пользователь с id = " + friendId + " не найден");
         }
-//        if (!user.getFriends().contains(friendId)) {
-//            throw new ValidationException("Данные пользователя не являются друзьями");
-//        }
 
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+        user.getFriendIds().remove(friendId);
+        friend.getFriendIds().remove(userId);
 
         return List.of(user, friend);
     }
@@ -80,7 +77,7 @@ public class UserService {
             throw new NotFoundException("Пользователь с id = " + userId + " не найден");
         }
 
-        return user.getFriends().stream()
+        return user.getFriendIds().stream()
                 .map(storage::findById)
                 .collect(Collectors.toList());
     }
@@ -96,8 +93,8 @@ public class UserService {
             throw new NotFoundException("Пользователь с id = " + otherId + " не найден");
         }
 
-        return user.getFriends().stream()
-                .filter(id -> other.getFriends().contains(id))
+        return user.getFriendIds().stream()
+                .filter(id -> other.getFriendIds().contains(id))
                 .map(storage::findById)
                 .collect(Collectors.toList());
     }
