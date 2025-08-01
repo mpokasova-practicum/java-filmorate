@@ -27,6 +27,7 @@ public class User {
     private Set<Long> friendIds = new HashSet<>();
     private Map<Long, FriendStatus> friendIdsWithStatus = new HashMap<>();
 
+
     public enum FriendStatus {
         PENDING,
         CONFIRMED
