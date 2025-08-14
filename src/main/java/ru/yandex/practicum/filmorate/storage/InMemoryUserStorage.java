@@ -103,7 +103,6 @@ public class InMemoryUserStorage implements UserStorage {
 
         user.getFriendIds().add(friendId);
         friend.getFriendIds().add(userId);
-
         return List.of(user, friend);
     }
 
