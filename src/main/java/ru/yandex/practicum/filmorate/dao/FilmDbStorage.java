@@ -133,6 +133,7 @@ public class FilmDbStorage implements FilmStorage {
             log.info("Фильма успешно обновлен");
             return newFilm;
         }
+
         throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
     }
 
