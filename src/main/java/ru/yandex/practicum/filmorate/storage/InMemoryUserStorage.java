@@ -7,13 +7,11 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
-@Component
+@Component("InMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
 
@@ -88,4 +86,70 @@ public class InMemoryUserStorage implements UserStorage {
             throw new ValidationException("Дата рождения не может быть в будущем");
         }
     }
+
+    public Collection<User> addFriend(Long userId, Long friendId) {
+        User user = findById(userId);
+        User friend = findById(friendId);
+
+        if (user == null) {
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+        }
+        if (friend == null) {
+            throw new NotFoundException("Пользователь с id = " + friendId + " не найден");
+        }
+        if (user.getFriendIds().contains(friendId)) {
+            throw new ValidationException("Данные пользователя уже являются друзьями");
+        }
+
+        user.getFriendIds().add(friendId);
+        friend.getFriendIds().add(userId);
+
+        return List.of(user, friend);
+    }
+
+    public Collection<User> deleteFriend(Long userId, Long friendId) {
+        User user = findById(userId);
+        User friend = findById(friendId);
+
+        if (user == null) {
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+        }
+        if (friend == null) {
+            throw new NotFoundException("Пользователь с id = " + friendId + " не найден");
+        }
+
+        user.getFriendIds().remove(friendId);
+        friend.getFriendIds().remove(userId);
+
+        return List.of(user, friend);
+    }
+
+    public Collection<User> findFriends(Long userId) {
+        User user = findById(userId);
+        if (user == null) {
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+        }
+
+        return user.getFriendIds().stream()
+                .map(this::findById)
+                .collect(Collectors.toList());
+    }
+
+    public Collection<User> findCommonFriends(Long userId, Long otherId) {
+        User user = findById(userId);
+        User other = findById(otherId);
+
+        if (user == null) {
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+        }
+        if (other == null) {
+            throw new NotFoundException("Пользователь с id = " + otherId + " не найден");
+        }
+
+        return user.getFriendIds().stream()
+                .filter(id -> other.getFriendIds().contains(id))
+                .map(this::findById)
+                .collect(Collectors.toList());
+    }
+
 }
