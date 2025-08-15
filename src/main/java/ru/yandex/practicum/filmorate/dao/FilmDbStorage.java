@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dao;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -14,6 +15,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.Date;
@@ -21,8 +23,11 @@ import java.sql.PreparedStatement;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.HashSet;
+
 
 @Slf4j
 @Component
@@ -31,6 +36,10 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbc;
     private final FilmRowMapper mapper;
+    @Autowired
+    GenreDbStorage genreStorage;
+    @Autowired
+    MpaDbStorage mpaStorage;
 
     public FilmDbStorage(JdbcTemplate jdbc, FilmRowMapper mapper) {
         this.jdbc = jdbc;
@@ -40,7 +49,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findAll() {
         String query = "SELECT * FROM film";
-        return jdbc.query(query, mapper);
+        List<Film> films = jdbc.query(query, mapper);
+        films.forEach(this::loadDetailsToFilm);
+
+        return films;
     }
 
     @Override
@@ -49,10 +61,22 @@ public class FilmDbStorage implements FilmStorage {
         Film film;
         try {
             film = jdbc.queryForObject(query, mapper, id);
+            loadDetailsToFilm(film);
             return film;
         } catch (EmptyResultDataAccessException ignored) {
             throw new NotFoundException("Фильм с id = " + id + " не найден");
         }
+    }
+
+    private void loadDetailsToFilm(Film film) {
+        String query = "SELECT mpa_id FROM film WHERE id = ?";
+        Long mpa_id = jdbc.queryForObject(query, Long.class, film.getId());
+
+        Mpa mpa = mpaStorage.findById(mpa_id);
+        film.setMpa(mpa);
+
+        Set<Genre> genresOfFilm = new HashSet<>(genreStorage.getGenresByFilmId(film.getId()));
+        film.setGenres(genresOfFilm);
     }
 
     @Override
@@ -178,6 +202,9 @@ public class FilmDbStorage implements FilmStorage {
                 "ON f.id = fl.film_id " +
                 "ORDER BY COALESCE(fl.like_count, 0) DESC " +
                 "LIMIT ?";
-        return jdbc.query(query, mapper, count);
+        List<Film> films = jdbc.query(query, mapper, count);
+        films.forEach(this::loadDetailsToFilm);
+
+        return films;
     }
 }
