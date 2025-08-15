@@ -70,9 +70,9 @@ public class FilmDbStorage implements FilmStorage {
 
     private void loadDetailsToFilm(Film film) {
         String query = "SELECT mpa_id FROM film WHERE id = ?";
-        Long mpa_id = jdbc.queryForObject(query, Long.class, film.getId());
+        Long mpaId = jdbc.queryForObject(query, Long.class, film.getId());
 
-        Mpa mpa = mpaStorage.findById(mpa_id);
+        Mpa mpa = mpaStorage.findById(mpaId);
         film.setMpa(mpa);
 
         Set<Genre> genresOfFilm = new HashSet<>(genreStorage.getGenresByFilmId(film.getId()));
